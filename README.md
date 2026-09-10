@@ -4,6 +4,11 @@ Calculates distribution-adjusted total returns for equity-income ETFs over the
 last 1 month, 3 months, 6 months, and 1 year. The report includes S&P 500,
 Nasdaq-100, and Dow-oriented income strategies plus plain-index benchmarks.
 
+Each output row also identifies the fund's expense ratio, underlying exposure,
+and options strategy. These descriptive fields are maintained in the script's
+`FUND_PROFILES` mapping because market-price providers do not consistently
+publish strategy metadata.
+
 ## Generated files
 
 Running the script creates these files in the repository root:
@@ -13,6 +18,19 @@ Running the script creates these files in the repository root:
 
 Yahoo Finance adjusted closing prices are used so dividends, distributions,
 and stock splits are incorporated into total return.
+
+The CSV includes:
+
+- Ticker and strategy group
+- Expense ratio
+- Underlying market exposure
+- ETF/options strategy
+- Metadata as-of date
+- Latest adjusted closing price and date
+- 1-month, 3-month, 6-month, and 1-year total returns
+
+Expense ratios and strategy descriptions are point-in-time reference data and
+should be reviewed when an issuer changes a fund's prospectus or fee waiver.
 
 ## Run locally
 
@@ -24,7 +42,7 @@ python etf_total_returns.py
 Select specific funds:
 
 ```bash
-python etf_total_returns.py --tickers GPIX GPIQ ISPY QYLG XYLG DIVO VOO QQQM DIA
+python etf_total_returns.py --tickers GPIX GPIQ OVL TDAQ ISPY QYLG XYLG DIVO VOO QQQM DIA
 ```
 
 Calculate as of a historical date:

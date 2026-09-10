@@ -46,7 +46,6 @@ FUND_GROUPS: dict[str, str] = {
     "SPYI": "S&P 500 income",
     "VOOY": "US large-cap income",
     "XYLD": "S&P 500 income",
-    "OVL": "S&P 500 income",
     # Nasdaq-oriented income strategies
     "GPIQ": "Nasdaq-100 income",
     "QYLG": "Nasdaq-100 income",
@@ -55,7 +54,6 @@ FUND_GROUPS: dict[str, str] = {
     "XQQI": "Nasdaq-100 income",
     "QQQY": "Nasdaq-100 income",
     "QYLD": "Nasdaq-100 income",
-    "TDAQ": "Nasdaq-100 income",
     # Dow-oriented strategies
     "DIVO": "Dow-like equity income",
     "DJIA": "Dow 30 income",
