@@ -1,0 +1,99 @@
+name: Update ETF total returns
+
+on:
+  workflow_dispatch:
+    inputs:
+      as_of:
+        description: "Optional as-of date (YYYY-MM-DD); blank uses latest close"
+        required: false
+        type: string
+      tickers:
+        description: "Optional space-separated tickers; blank uses defaults"
+        required: false
+        type: string
+      exclude_benchmarks:
+        description: "Exclude VOO, QQQM, and DIA"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: etf-total-returns-main
+  cancel-in-progress: false
+
+jobs:
+  calculate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install --requirement requirements.txt
+
+      - name: Calculate returns and create chart
+        env:
+          AS_OF_INPUT: ${{ inputs.as_of }}
+          TICKERS_INPUT: ${{ inputs.tickers }}
+          EXCLUDE_BENCHMARKS: ${{ inputs.exclude_benchmarks }}
+        shell: bash
+        run: |
+          args=(
+            --output etf_total_returns.csv
+            --chart etf_total_returns.png
+          )
+
+          if [[ -n "$AS_OF_INPUT" ]]; then
+            args+=(--as-of "$AS_OF_INPUT")
+          fi
+
+          if [[ -n "$TICKERS_INPUT" ]]; then
+            read -r -a selected_tickers <<< "$TICKERS_INPUT"
+            args+=(--tickers "${selected_tickers[@]}")
+          fi
+
+          if [[ "$EXCLUDE_BENCHMARKS" == "true" ]]; then
+            args+=(--no-benchmarks)
+          fi
+
+          for attempt in 1 2 3; do
+            if python etf_total_returns.py "${args[@]}"; then
+              exit 0
+            fi
+
+            if [[ "$attempt" -lt 3 ]]; then
+              echo "Price download failed on attempt $attempt; retrying..."
+              sleep $((attempt * 15))
+            fi
+          done
+
+          echo "Price download failed after three attempts."
+          exit 1
+
+      - name: Commit generated files to main
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- etf_total_returns.csv etf_total_returns.png
+
+          if git diff --cached --quiet; then
+            echo "Generated files are unchanged."
+            exit 0
+          fi
+
+          git commit -m "Update ETF total return report"
+          git push origin HEAD:main
