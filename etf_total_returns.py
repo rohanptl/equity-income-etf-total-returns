@@ -163,6 +163,7 @@ def download_adjusted_closes(
         group_by="ticker",
         threads=True,
         progress=False,
+        repair=True,
     )
 
     if data.empty:
